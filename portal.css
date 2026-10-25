@@ -27,3 +27,7 @@
 .attachment-list{border:1px solid var(--line);background:#fff;padding:1.2rem;margin-bottom:1.6rem}
 .attachment-list h3{font:700 1.3rem var(--serif);margin:.2rem 0 .7rem}
 .attachment-list a{display:block;padding:.7rem 0;border-top:1px solid var(--line);color:var(--red);font-weight:600;font-size:.85rem}
+.lead-story .story-image{height:340px;min-height:0}
+.story-image img,.thumb img,.regional-art img,.article-cover{object-position:center top}
+@media(max-width:800px){.lead-story .story-image{height:270px}}
+@media(max-width:540px){.lead-story .story-image{height:220px}}
