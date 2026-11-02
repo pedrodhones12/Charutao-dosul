@@ -20,16 +20,34 @@ function el(tag, className, text) {
   return node;
 }
 
-function photo(src, alt, className) {
+function photo(src, alt, className, focus) {
   const img = document.createElement('img');
   img.src = src;
   img.alt = alt || '';
   img.loading = 'lazy';
   if (className) img.className = className;
+  if (focus) img.style.objectPosition = focus;
   return img;
 }
 
 function articleUrl(post) { return SITE_URL + '?slug=' + encodeURIComponent(post.slug || post.id || ''); }
+
+function coverFocus(post) {
+  const x = post.cover_focus_x;
+  const y = post.cover_focus_y;
+  if (typeof x !== 'number' || typeof y !== 'number') return null;
+  return Math.min(100, Math.max(0, x)) + '% ' + Math.min(100, Math.max(0, y)) + '%';
+}
+
+function isVideoFile(file) {
+  if (!file) return false;
+  if (file.kind === 'video') return true;
+  return /\.(mp4|webm|mov|m4v|ogv)$/i.test(file.url || file.name || '');
+}
+
+function fileLabel(name) {
+  return String(name || '').replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim();
+}
 
 function dateLabel(value) {
   if (!value) return '';
@@ -50,7 +68,7 @@ function searchIndex(post) {
 
 function storyBox(post) {
   const box = el('div', 'story-image');
-  if (post.cover_image) box.appendChild(photo(post.cover_image, post.title));
+  if (post.cover_image) box.appendChild(photo(post.cover_image, post.title, null, coverFocus(post)));
   box.appendChild(el('span', null, post.category || 'DESTAQUE'));
   return box;
 }
@@ -58,7 +76,7 @@ function storyBox(post) {
 function listCard(post) {
   const card = el('article', 'list-story story-card');
   const thumb = el('div', 'thumb');
-  if (post.cover_image) thumb.appendChild(photo(post.cover_image, post.title));
+  if (post.cover_image) thumb.appendChild(photo(post.cover_image, post.title, null, coverFocus(post)));
   const body = el('div');
   body.appendChild(el('p', 'eyebrow', post.category || 'Editoria'));
   const title = el('h3');
@@ -272,7 +290,7 @@ async function loadArticle(slug) {
     metaLine.appendChild(share);
   }
   view.appendChild(metaLine);
-  if (post.cover_image) view.appendChild(photo(post.cover_image, post.title, 'article-cover'));
+  if (post.cover_image) view.appendChild(photo(post.cover_image, post.title, 'article-cover', coverFocus(post)));
   const body = el('article', 'article-body');
   (post.body || '').split('\n').filter((line) => line.trim()).forEach((line) => {
     const inline = line.trim().match(/^!\[(.*?)\]\((\S+)\)$/);
@@ -296,10 +314,24 @@ async function loadArticle(slug) {
     box.appendChild(link);
     view.appendChild(box);
   }
-  if ((post.attachments || []).length) {
+  const files = post.attachments || [];
+  files.filter(isVideoFile).forEach((file) => {
+    const figure = el('figure', 'article-video');
+    const player = el('video');
+    player.controls = true;
+    player.playsInline = true;
+    player.preload = 'metadata';
+    player.src = file.url;
+    figure.appendChild(player);
+    const label = fileLabel(file.name);
+    if (label) figure.appendChild(el('figcaption', null, label));
+    view.appendChild(figure);
+  });
+  const documents = files.filter((file) => !isVideoFile(file));
+  if (documents.length) {
     const box = el('section', 'attachment-list');
     box.appendChild(el('h3', null, 'Documentos e materiais'));
-    post.attachments.forEach((file) => {
+    documents.forEach((file) => {
       const link = el('a', null, file.name || file.url);
       link.href = file.url;
       link.target = '_blank';
