@@ -292,7 +292,7 @@ async function loadArticle(slug) {
     const inline = line.trim().match(/^!\[(.*?)\]\((\S+)\)$/);
     if (inline) {
       const figure = el('figure', 'article-figure');
-      figure.appendChild(photo(inline[2], inline[1] || post.title, 'article-photo'));
+      figure.appendChild(photo(inline[2], post.title, 'article-photo'));
       body.appendChild(figure);
       return;
     }
