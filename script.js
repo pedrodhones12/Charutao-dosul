@@ -45,10 +45,6 @@ function isVideoFile(file) {
   return /\.(mp4|webm|mov|m4v|ogv)$/i.test(file.url || file.name || '');
 }
 
-function fileLabel(name) {
-  return String(name || '').replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim();
-}
-
 function dateLabel(value) {
   if (!value) return '';
   const date = new Date(value);
@@ -297,7 +293,6 @@ async function loadArticle(slug) {
     if (inline) {
       const figure = el('figure', 'article-figure');
       figure.appendChild(photo(inline[2], inline[1] || post.title, 'article-photo'));
-      if (inline[1]) figure.appendChild(el('figcaption', null, inline[1]));
       body.appendChild(figure);
       return;
     }
@@ -323,8 +318,6 @@ async function loadArticle(slug) {
     player.preload = 'metadata';
     player.src = file.url;
     figure.appendChild(player);
-    const label = fileLabel(file.name);
-    if (label) figure.appendChild(el('figcaption', null, label));
     view.appendChild(figure);
   });
   const documents = files.filter((file) => !isVideoFile(file));
